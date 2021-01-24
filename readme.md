@@ -10,7 +10,7 @@ e.g.
 ```bash
 cd ~
 git clone https://github.com/buxtonpaul/sanddollar.git
-ln -s /usr/bin/sanddollar ~/sanddollar/sanddollar.py
+sudo ln -s  ~/sanddollar/sanddollar.py /usr/bin/sanddollar
 ```
 
 You should now be able to run the sample
