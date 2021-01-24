@@ -1,0 +1,12 @@
+#!/usr/bin/sanddollar
+
+#include <stdio.h>
+
+int main(int argc,char* argv[])
+{
+    if(argc>1)
+        printf("Hello scripted C world %s\n",argv[1]);
+    else
+        printf("Hello world with no params\n");
+    return 0;
+}

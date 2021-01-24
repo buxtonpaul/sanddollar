@@ -1,0 +1,3 @@
+Move cached files to be subdir of script location not cwd
+Test creation/modification Date
+Add switches to control compilation
