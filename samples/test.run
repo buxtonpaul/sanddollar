@@ -1,4 +1,4 @@
-#!/usr/bin/sanddollar
+#!/usr/local/bin/sanddollar
 
 #include <stdio.h>
 

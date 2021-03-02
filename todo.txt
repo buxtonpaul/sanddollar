@@ -1,3 +1,5 @@
-Move cached files to be subdir of script location not cwd
-Test creation/modification Date
 Add switches to control compilation
+Implement helpers for selection of tools
+Add some boost libraries?
+Add user include folder
+Add use of environment vars to adjust behaviour e.g. compiler and link flags etc.

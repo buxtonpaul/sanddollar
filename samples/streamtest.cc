@@ -1,0 +1,51 @@
+#!/usr/local/bin/sanddollar
+#include <iostream>
+#include <string>
+#include <filesystem>
+#include "pstream.h"
+
+using  redi::pstreams;
+using  redi::pstream;
+using  redi::peof;
+
+namespace fs = std::filesystem;
+
+
+/* Notes
+pstreams very similar to boost implemntation.
+stand
+// as of C++17 boost filesystem library is part of the stl
+https://en.cppreference.com/w/cpp/filesystem
+
+
+*/
+
+
+
+
+int main(int argc, char *argv[])
+{
+  // run something and capture io
+  const pstreams::pmode mode = pstreams::pstdout | pstreams::pstdin;
+  pstream child("./simple.cc", mode);
+  child << "pauls" << peof;
+  for (std::string line; std::getline(child, line);)
+  {
+    std::cout << line << std::endl;
+  }
+
+  // iterate over files in a folder
+  fs::current_path("..");
+  for ( auto& p : fs::directory_iterator(fs::path(".")))
+        std::cout << fs::absolute(p.path()) << '\n';
+
+  if (const char* env_p = std::getenv("PATH"))
+        std::cout << "Your PATH is: " << env_p << '\n';
+ // exporting environment variables to take effect outside the script is not possible
+ // (e.g. source myscript.sandollar)
+ // as setenv can only affect local and child context
+ // one possible solution is to exit to a new shell as described here
+ // https://www.linuxquestions.org/questions/programming-9/setenv-within-a-program-doesn%27t-last-172991/
+ // do we care that much?
+
+}
