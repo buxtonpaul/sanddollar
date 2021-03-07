@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 {
   // run something and capture io
   const pstreams::pmode mode = pstreams::pstdout | pstreams::pstdin;
-  pstream child("./simple.cc", mode);
+  pstream child("./simple.sand", mode);
   child << "pauls" << peof;
   for (std::string line; std::getline(child, line);)
   {

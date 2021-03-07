@@ -25,8 +25,8 @@ sudo make install
 You should now be able to run the samples
 ```
 cd sanddollar
-./samples/test.run
-./samples/streamtest.cc
+./samples/test.sand
+./samples/streamtest.sand
 ```
 
 The first sample is a very simple hello world style example. Streamtest.cc demonstrates use of included headerfiles to provide additional functionality ( in thie case Johnathan Wakely's pstream library)
@@ -38,9 +38,9 @@ You can run scripts on the commandline as you would any other script either rely
 
 Options:
 
--f or --force , Forces recompilation of script regardless of cache state
--c or --check , Does not run the script only verifies it is syntactically correct.
--h or --help , Print out help message
+* -f or --force , Forces recompilation of script regardless of cache state
+* -c or --check , Does not run the script only verifies it is syntactically correct.
+* -h or --help , Print out help message
 
 ## Attributions
 Pstreams library is Copyright Johnathan Wakely under Boost License. https://sourceforge.net/projects/pstreams/
