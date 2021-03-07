@@ -6,6 +6,12 @@ The 'script' is compiled to a binary and cached locally to allow improved execut
 Currently the C++ standard library is all that is available.
 
 ## Installation instructions
+
+### Prerequisites
+Currently the script requires g++9 and the boost libraries installed
+
+### Build instructions
+
 ```bash
 git clone https://github.com/buxtonpaul/sanddollar.git
 cd sanddollar
@@ -23,7 +29,21 @@ cd sanddollar
 ./samples/streamtest.cc
 ```
 
-The first sample is a very simple hello world style example. Streamtest.cc demonstrates use of included headerfiles to provide additional functionality
+The first sample is a very simple hello world style example. Streamtest.cc demonstrates use of included headerfiles to provide additional functionality ( in thie case Johnathan Wakely's pstream library)
+
+
+## Usage
+
+You can run scripts on the commandline as you would any other script either relying on the shebang line to resolve to sanddollar handler. Or invoke sanddollar directly which allows a few options.
+
+Options:
+
+-f or --force , Forces recompilation of script regardless of cache state
+-c or --check , Does not run the script only verifies it is syntactically correct.
+-h or --help , Print out help message
+
+## Attributions
+Pstreams library is Copyright Johnathan Wakely under Boost License. https://sourceforge.net/projects/pstreams/
 
 
 ----

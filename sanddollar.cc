@@ -1,3 +1,18 @@
+/*   Copyright 2021 Paul Buxton
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.*/
+
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -5,18 +20,18 @@
 #include <ctime>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include "sanddollar.h"
 #define VERSION 1.1
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
 fs::path scriptdir;
-fs::path get_cache_path(fs::path targetfile);
 
 fs::path convertscript(fs::path inputfile, fs::path cachepath)
 {
     if (!fs::exists(inputfile) || !fs::is_regular_file(inputfile))
-        throw std::invalid_argument("Inputfile not found");
+        throw std::invalid_argument("Inputfile not  found");
     if (!fs::exists(scriptdir / ".sanddollar"))
         fs::create_directory(scriptdir / ".sanddollar");
 
@@ -49,7 +64,6 @@ fs::path compilescript(fs::path inputfile, fs::path cachepath)
     int result = std::system(s.c_str());
     if (result)
         throw std::invalid_argument("Script file is invalid");
-
     return cachepath / "runable";
 }
 
@@ -65,12 +79,11 @@ int runscript(fs::path compiledscript, std::vector<std::string> params)
     return result;
 }
 
-int parse_input(int argc, char *argv[], std::vector<std::string> *target)
+int parse_input(int argc, char *argv[], std::vector<std::string> *target, po::variables_map *vm)
 {
     po::options_description general("Options");
 
-    general.add_options()("help,h", "Display this help message"),
-        ("version,v", "Display the version number");
+    general.add_options()("help,h", "Display this help message")("version,v", "Display the version number")("check,c", "Check the script without running")("force,f", "Force recompilation");
 
     po::options_description hidden("Hidden options");
     hidden.add_options()("infile,i", po::value<std::vector<std::string>>(target), "Input File");
@@ -82,25 +95,19 @@ int parse_input(int argc, char *argv[], std::vector<std::string> *target)
 
     cmdline.add(general).add(hidden);
 
-    po::variables_map vm;
-
-    po::store(po::command_line_parser(argc, argv).options(cmdline).positional(positional).allow_unregistered().run(), vm);
-    po::notify(vm);
-    if (vm.count("help"))
-    {
-        std::cout << "Usage:" << std::endl
-                  << "sanddollar [options] <inputfile>" << std::endl;
-        std::cout << general;
-        return EXIT_SUCCESS;
-    }
-    if (vm.count("version"))
+    po::store(po::command_line_parser(argc, argv).options(cmdline).positional(positional).allow_unregistered().run(), *vm);
+    po::notify(*vm);
+    if (vm->count("version"))
     {
         std::cout << "Version number :" << VERSION << std::endl;
     }
 
-    if (!vm.count("infile"))
+    if (!vm->count("infile") || (vm->count("help")))
     {
-        throw std::invalid_argument("Error no input file specified");
+        std::cout << "Usage:" << std::endl
+                  << "sanddollar [options] <inputfile>" << std::endl;
+        std::cout << general;
+        return -1;
     }
     return 0;
 }
@@ -124,11 +131,15 @@ int main(int argc, char *argv[])
     try
     {
         std::vector<std::string> target;
+        po::variables_map vm;
 
-        parse_input(argc, argv, &target);
+        if (parse_input(argc, argv, &target, &vm))
+            return 0;
         fs::path targetfile = target.front();
         fs::path compiled = get_cached_script(targetfile);
-        bool compile = false;
+        bool compile = vm.count("force") ? true : false;
+        bool run = vm.count("check") ? false : true;
+
         if (!fs::exists(compiled))
             compile = true;
         else if (fs::last_write_time(targetfile) > fs::last_write_time(compiled))
@@ -140,6 +151,8 @@ int main(int argc, char *argv[])
             fs::path converted = convertscript(targetfile, cachepath);
             compiled = compilescript(converted, cachepath);
         }
+        if (!run)
+            return 0;
         target.erase(target.begin());
         return runscript(compiled, target);
     }

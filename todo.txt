@@ -1,11 +1,9 @@
-Add switches to control compilation
 Implement helpers for selection of tools
 Add some boost libraries?
 Add user include folder
 Add use of environment vars to adjust behaviour e.g. compiler and link flags etc.
 Decide appropriate script extension
 Check that shebang line is correct
-Add license
 Implement library of coreutils like helpers
 Manpage
 Figure packaging/dependancies
