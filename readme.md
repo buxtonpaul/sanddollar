@@ -41,6 +41,7 @@ Options:
 * -f or --force , Forces recompilation of script regardless of cache state
 * -c or --check , Does not run the script only verifies it is syntactically correct.
 * -h or --help , Print out help message
+* -d or --debug , Compile the script with debug symbols / run it with gdb --tui
 
 ## Attributions
 Pstreams library is Copyright Johnathan Wakely under Boost License. https://sourceforge.net/projects/pstreams/

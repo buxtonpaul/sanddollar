@@ -8,12 +8,12 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-fs::path get_cache_path(fs::path targetfile);
-fs::path convertscript(fs::path inputfile, fs::path cachepath);
-fs::path compilescript(fs::path inputfile, fs::path cachepath);
-int runscript(fs::path compiledscript, std::vector<std::string> params);
-int parse_input(int argc, char *argv[], std::vector<std::string> *target);
-fs::path get_cached_script(fs::path targetfile);
-fs::path get_cache_path(fs::path targetfile);
+fs::path get_cache_path(const fs::path &targetfile);
+fs::path convertscript(const fs::path &inputfile, const fs::path &cachepath, const po::variables_map &vm);
+fs::path compilescript(const fs::path &inputfile, const fs::path &cachepath, const po::variables_map &vm);
+int runscript(const fs::path &compiledscript, const std::vector<std::string> &params, const po::variables_map &vm);
+int parse_input(const int argc, const char *argv[], std::vector<std::string> *target);
+fs::path get_cached_script(const fs::path &targetfile, const po::variables_map &vm);
+fs::path get_cache_path(const fs::path &targetfile);
 
 #endif

@@ -12,7 +12,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.*/
 
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -28,7 +27,7 @@ namespace fs = boost::filesystem;
 
 fs::path scriptdir;
 
-fs::path convertscript(fs::path inputfile, fs::path cachepath)
+fs::path convertscript(const fs::path &inputfile, const fs::path &cachepath, const po::variables_map &vm)
 {
     if (!fs::exists(inputfile) || !fs::is_regular_file(inputfile))
         throw std::invalid_argument("Inputfile not  found");
@@ -56,34 +55,53 @@ fs::path convertscript(fs::path inputfile, fs::path cachepath)
     return outfilepath;
 }
 
-fs::path compilescript(fs::path inputfile, fs::path cachepath)
+fs::path compilescript(const fs::path &inputfile, const fs::path &cachepath, const po::variables_map &vm)
 {
     std::stringstream invoke;
-    invoke << "g++-9 -o " << (cachepath / "runable").string() << " --std=c++17 -lstdc++fs -I " << scriptdir.string() << " " << inputfile.string();
+    invoke << "g++-9 -o ";
+    if (vm.count("debug")){
+        invoke << (cachepath / "debuggable").string();
+        invoke << " -g ";
+    }
+    else
+    {
+        invoke << (cachepath / "runable").string();
+    }
+    invoke << " --std=c++17 -lstdc++fs -I " << scriptdir.string() << " " << inputfile.string();
     std::string s = invoke.str();
     int result = std::system(s.c_str());
     if (result)
         throw std::invalid_argument("Script file is invalid");
+    
+    if (vm.count("debug"))
+        return cachepath / "debuggable";
     return cachepath / "runable";
+        
 }
 
-int runscript(fs::path compiledscript, std::vector<std::string> params)
+int runscript(const fs::path &compiledscript, const std::vector<std::string> &params,  const po::variables_map &vm )
 {
     std::stringstream invoke;
+    if (vm.count("debug")){
+        invoke <<"gdb -ex=\"start\" --silent --tui --args ";
+    }
     invoke << compiledscript.string();
     for (auto parm : params)
         invoke << " " << parm;
     std::string s = invoke.str();
     int result = std::system(s.c_str());
-
     return result;
 }
 
-int parse_input(int argc, char *argv[], std::vector<std::string> *target, po::variables_map *vm)
+int parse_input(const int argc, const char *argv[], std::vector<std::string> *target, po::variables_map *vm)
 {
     po::options_description general("Options");
 
-    general.add_options()("help,h", "Display this help message")("version,v", "Display the version number")("check,c", "Check the script without running")("force,f", "Force recompilation");
+    general.add_options()("help,h", "Display this help message") \
+    ("version,v", "Display the version number")\
+    ("check,c", "Check the script without running")\
+    ("debug,d", "Compile/run with debug")\
+    ("force,f", "Force recompilation");
 
     po::options_description hidden("Hidden options");
     hidden.add_options()("infile,i", po::value<std::vector<std::string>>(target), "Input File");
@@ -112,13 +130,19 @@ int parse_input(int argc, char *argv[], std::vector<std::string> *target, po::va
     return 0;
 }
 
-fs::path get_cached_script(fs::path targetfile)
+fs::path get_cached_script(const fs::path &targetfile, const po::variables_map &vm  )
 {
-    fs::path cachedscript = get_cache_path(targetfile) / "runable";
-    return (cachedscript);
+    if (vm.count("debug"))
+    {
+        return  get_cache_path(targetfile) / "debuggable";
+    }
+    else
+    {
+        return get_cache_path(targetfile) / "runable";
+    }
 }
 
-fs::path get_cache_path(fs::path targetfile)
+fs::path get_cache_path(const fs::path &targetfile)
 {
     fs::path basefolder = targetfile.parent_path();
     basefolder /= ".sanddollar";
@@ -133,10 +157,10 @@ int main(int argc, char *argv[])
         std::vector<std::string> target;
         po::variables_map vm;
 
-        if (parse_input(argc, argv, &target, &vm))
+        if (parse_input(argc, (const char **)argv, &target, &vm))
             return 0;
         fs::path targetfile = target.front();
-        fs::path compiled = get_cached_script(targetfile);
+        fs::path compiled = get_cached_script(targetfile, vm);
         bool compile = vm.count("force") ? true : false;
         bool run = vm.count("check") ? false : true;
 
@@ -148,13 +172,13 @@ int main(int argc, char *argv[])
         {
             scriptdir = fs::absolute(targetfile).remove_filename();
             fs::path cachepath = get_cache_path(targetfile);
-            fs::path converted = convertscript(targetfile, cachepath);
-            compiled = compilescript(converted, cachepath);
+            fs::path converted = convertscript(targetfile, cachepath, vm);
+            compiled = compilescript(converted, cachepath, vm);
         }
         if (!run)
             return 0;
         target.erase(target.begin());
-        return runscript(compiled, target);
+        return runscript(compiled, target, vm);
     }
     catch (const std::exception &ex)
     {
